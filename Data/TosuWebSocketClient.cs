@@ -44,6 +44,11 @@ namespace OsuOscVRC.Data
             var initialConnectionTcs = _initialConnectionTcs;
             if (initialConnectionTcs == null) return false;
 
+            if (timeoutMs == Timeout.Infinite)
+            {
+                return await initialConnectionTcs.Task;
+            }
+
             using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var delayTask = Task.Delay(timeoutMs, timeoutCts.Token);
             var completedTask = await Task.WhenAny(initialConnectionTcs.Task, delayTask);

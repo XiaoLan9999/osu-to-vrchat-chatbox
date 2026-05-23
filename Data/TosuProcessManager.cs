@@ -36,15 +36,15 @@ namespace OsuOscVRC.Data
             catch { return false; }
         }
 
-        public string? Start()
+        public string? Start(bool hidden = true)
         {
             if (IsPortInUse()) return null; // tosu already running
 
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            string fullPath = Path.IsPathRooted(_exePath) 
-                ? _exePath 
+            string fullPath = Path.IsPathRooted(_exePath)
+                ? _exePath
                 : Path.GetFullPath(Path.Combine(basePath, _exePath));
-                
+
             if (!File.Exists(fullPath))
             {
                 return $"tosu.exe not found at:\n{fullPath}\n\n" +
@@ -62,8 +62,8 @@ namespace OsuOscVRC.Data
                     FileName = fullPath,
                     WorkingDirectory = Path.GetDirectoryName(fullPath) ?? ".",
                     UseShellExecute = true,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = hidden,
+                    WindowStyle = hidden ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal,
                 };
 
                 _process = Process.Start(psi);
@@ -137,7 +137,7 @@ namespace OsuOscVRC.Data
         public async Task<bool> WaitForReady(int timeoutMs = 15000)
         {
             var sw = Stopwatch.StartNew();
-            while (sw.ElapsedMilliseconds < timeoutMs)
+            while (timeoutMs == Timeout.Infinite || sw.ElapsedMilliseconds < timeoutMs)
             {
                 if (_process != null && _process.HasExited) return false;
                 if (IsPortInUse()) return true;

@@ -13,9 +13,6 @@ namespace OsuOscVRC
 {
     public partial class MainWindow : Window
     {
-        private const int TosuStartupTimeoutMs = 15000;
-        private const int TosuInitialWebSocketTimeoutMs = 15000;
-
         private bool _isInitializing = true;
         private AppConfig _config;
         private TosuProcessManager? _tosuProcess;
@@ -212,18 +209,25 @@ namespace OsuOscVRC
             TxtStatus.Text = Translator.Get("StatusStartingTosu");
             _tosuProcess = new TosuProcessManager(_config.TosuExePath, _config.TosuHost, _config.TosuPort);
 
-            string? err = _tosuProcess.Start();
+            string? err = _tosuProcess.Start(hidden: true);
             if (err != null)
             {
                 MessageBox.Show(err, Translator.Get("TosuNotFound"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 DoStop(); return;
             }
 
-            bool ready = await _tosuProcess.WaitForReady(TosuStartupTimeoutMs);
+            bool ready = await _tosuProcess.WaitForReady(10000);
             if (!ready)
             {
-                MessageBox.Show(Translator.Get("TosuWaitTimeout"), "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-                DoStop(); return;
+                // Silent launch failed — kill and retry with visible window, wait indefinitely
+                _tosuProcess.Stop();
+                err = _tosuProcess.Start(hidden: false);
+                if (err != null)
+                {
+                    MessageBox.Show(err, Translator.Get("TosuNotFound"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                    DoStop(); return;
+                }
+                await _tosuProcess.WaitForReady(Timeout.Infinite);
             }
 
             try { _oscSender = new VRChatOscSender(_config.VRChatOscHost, _config.VRChatOscPort); }
@@ -234,13 +238,7 @@ namespace OsuOscVRC
             await _tosuClient.StartAsync();
             UpdateStatus();
 
-            bool connected = await _tosuClient.WaitForConnectionAsync(TosuInitialWebSocketTimeoutMs);
-            if (!connected)
-            {
-                MessageBox.Show("Timed out while connecting to tosu websocket. Please verify tosu finished starting and try again.",
-                    "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-                DoStop(); return;
-            }
+            await _tosuClient.WaitForConnectionAsync(Timeout.Infinite);
 
             _updateTimer.Interval = TimeSpan.FromMilliseconds(_config.UpdateIntervalMs);
             _updateTimer.Start();
