@@ -19,8 +19,11 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Publish
-        run: dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -o ./publish
+      - name: Publish (self-contained)
+        run: dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -o ./publish/sc
+
+      - name: Publish (framework-dependent)
+        run: dotnet publish -c Release -r win-x64 --no-self-contained -p:PublishSingleFile=true -p:DebugType=None -o ./publish/fd
 
       - name: Download latest tosu (Windows)
         shell: pwsh
@@ -29,24 +32,48 @@ jobs:
           $asset = $release.assets | Where-Object { $_.name -like "tosu-windows-*.zip" } | Select-Object -First 1
           Write-Host "Downloading $($asset.name)..."
           Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "tosu-windows.zip"
-          New-Item -ItemType Directory -Path "./publish/tosu" -Force
-          Expand-Archive -Path "tosu-windows.zip" -DestinationPath "./publish/tosu" -Force
 
-      - name: Write tosu config (disable browser)
+      - name: Bundle tosu into both packages
+        shell: pwsh
+        run: |
+          foreach ($dir in @("./publish/sc", "./publish/fd")) {
+            New-Item -ItemType Directory -Path "$dir/tosu" -Force
+            Expand-Archive -Path "tosu-windows.zip" -DestinationPath "$dir/tosu" -Force
+            @"
+          [dangerous]
+          openDashboardOnStartup = false
+          "@ | Set-Content -Path "$dir/tosu/toso.toml"
+          }
+
+      - name: Add .NET runtime installer script (fd only)
         shell: pwsh
         run: |
           @"
-          [dangerous]
-          openDashboardOnStartup = false
-          "@ | Set-Content -Path "./publish/tosu/toso.toml"
+          @echo off
+          chcp 65001 >nul
+          echo 正在检查 .NET 8 桌面运行时...
+          where dotnet >nul 2>nul
+          if %errorlevel% neq 0 (
+              echo 未检测到 .NET 8 环境。正在为您打开微软官方下载页面...
+              start https://dotnet.microsoft.com/en-us/download/dotnet/8.0
+              echo 请下载并安装 [.NET Desktop Runtime 8.0 (x64)]，安装完成后重新运行。
+              pause
+              exit /b 1
+          )
+          start OsuOscVRC.exe
+          "@ | Set-Content -Path "./publish/fd/INSTALL.bat"
 
-      - name: Create release 7z
+      - name: Create 7z archives
         shell: pwsh
         run: |
-          & "C:\Program Files\7-Zip\7z.exe" a -mx=9 -t7z "osu-to-vrchat-chatbox-${{ github.ref_name }}.7z" "./publish/*"
+          $tag = "${{ github.ref_name }}"
+          & "C:\Program Files\7-Zip\7z.exe" a -mx=9 -t7z "osu-to-vrchat-chatbox-${tag}-full.7z"       "./publish/sc/*"
+          & "C:\Program Files\7-Zip\7z.exe" a -mx=9 -t7z "osu-to-vrchat-chatbox-${tag}-portable.7z"  "./publish/fd/*"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: osu-to-vrchat-chatbox-${{ github.ref_name }}.7z
+          files: |
+            osu-to-vrchat-chatbox-${{ github.ref_name }}-full.7z
+            osu-to-vrchat-chatbox-${{ github.ref_name }}-portable.7z
           generate_release_notes: true
