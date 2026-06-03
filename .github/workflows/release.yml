@@ -40,9 +40,8 @@ jobs:
             New-Item -ItemType Directory -Path "$dir/tosu" -Force
             Expand-Archive -Path "tosu-windows.zip" -DestinationPath "$dir/tosu" -Force
             @"
-          [dangerous]
-          openDashboardOnStartup = false
-          "@ | Set-Content -Path "$dir/tosu/toso.toml"
+          OPEN_DASHBOARD_ON_STARTUP=false
+          "@ | Set-Content -Path "$dir/tosu/tosu.env"
           }
 
       - name: Add .NET runtime installer script (fd only)

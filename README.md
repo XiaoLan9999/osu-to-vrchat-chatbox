@@ -10,6 +10,7 @@ Automatically launches tosu, connects to its WebSocket, formats status text with
 - Supports multiple game states: Song Select, Playing, Paused, Failed, Result, Replay, Editor, Idle
 - Fully customizable chatbox templates per state with template variables
 - Supports osu! / taiko / catch / mania with customizable mode names
+- Hide individual mods from the displayed mod list
 - English / Chinese UI (follows system language)
 
 ## Usage
@@ -34,6 +35,8 @@ dotnet run --project OsuOscVRC.csproj
 
 A `config_osuosc.yaml` file is created on first launch. All settings can be edited from the UI.
 
+Enter mod names in **Hide Mods** on the Display tab to remove them from `{mods}`. Separate multiple names with commas or spaces. For example, `RELAX, HD` hides RELAX/RX and HD without changing `{mods_id}` or other gameplay data.
+
 ### Template Variables
 
 ```
@@ -50,7 +53,7 @@ A `config_osuosc.yaml` file is created on first launch. All settings can be edit
 - `{mode_id}` — mode numeric ID: 0=osu!, 1=Taiko, 2=Catch, 3=Mania.
 - `{path}` — full path to the .osu beatmap file.
 - `{accuracy}` / `{acc}` — accuracy percentage (0–100).
-- `{mods}` — mods name string (e.g. `"DT,HD"`).
+- `{mods}` — mods name string after the **Hide Mods** filter (e.g. `"DT,HD"`).
 - `{mods_id}` — mods bitwise numeric ID (e.g. `64` = DT).
 - `{miss}` — miss count.
 - `{player}` — replay author while watching replays, or your own name during normal play.

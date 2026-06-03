@@ -131,7 +131,15 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="12,16,12,12">
                         <CheckBox x:Name="CbUseUnicode" Content="使用原版标题 (Unicode)" Margin="0,0,0,10"/>
-                        <CheckBox x:Name="CbShowArtist" Content="显示艺术家名称" Margin="0,0,0,16"/>
+                        <CheckBox x:Name="CbShowArtist" Content="显示艺术家名称" Margin="0,0,0,10"/>
+
+                        <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <Label x:Name="LblDispHiddenMods" Content="隐藏 MOD:"/>
+                            <TextBox x:Name="TbDispHiddenMods" Grid.Column="1"/>
+                        </Grid>
+                        <TextBlock x:Name="TxtDispHiddenModsHint" Margin="140,0,0,16" TextWrapping="Wrap"
+                                   Foreground="{StaticResource DimTextBrush}"
+                                   Text="用逗号或空格分隔，例如 RELAX, HD。"/>
 
                         <Grid Margin="0,0,0,8"><Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                             <Label x:Name="LblDispStar" Content="星数小数位:"/>

@@ -17,6 +17,7 @@ namespace OsuOscVRC.Config
 
         public bool UseUnicodeTitle { get; set; } = false;
         public bool ShowArtist { get; set; } = false;
+        public string HiddenMods { get; set; } = "";
         public int StarDecimals { get; set; } = 2;
         public int PpDecimals { get; set; } = 1;
         public int AccuracyDecimals { get; set; } = 2;

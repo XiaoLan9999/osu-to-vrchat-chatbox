@@ -125,6 +125,9 @@ namespace OsuOscVRC.Formatter
             var timeCurrent = forceTimeZero ? "0:00" : FormatTime(state.Beatmap?.Time?.Live ?? 0);
             var timeTotal = FormatTime(state.Beatmap?.Time?.LastObject ?? 0);
             string mods = state.Play?.Mods?.Name ?? "";
+            if (isResult && !string.IsNullOrWhiteSpace(state.ResultsScreen?.Mods?.Name))
+                mods = state.ResultsScreen.Mods.Name;
+            mods = FilterMods(mods, config.HiddenMods);
 
             double stars = state.Beatmap?.Stats?.Stars?.Total ?? 0;
             if (stars == 0) stars = state.Beatmap?.Stats?.Stars?.Live ?? 0;
@@ -178,6 +181,41 @@ namespace OsuOscVRC.Formatter
             }
 
             return result;
+        }
+
+        private static string FilterMods(string mods, string? hiddenMods)
+        {
+            if (string.IsNullOrWhiteSpace(mods) || string.IsNullOrWhiteSpace(hiddenMods))
+                return mods;
+
+            var hidden = new HashSet<string>(
+                Regex.Split(hiddenMods, @"[\s,;+|/]+")
+                    .Where(mod => !string.IsNullOrWhiteSpace(mod))
+                    .Select(NormalizeModName),
+                StringComparer.OrdinalIgnoreCase);
+
+            if (hidden.Count == 0)
+                return mods;
+
+            var modNames = Regex.Split(mods, @"[\s,;+|/]+")
+                .Where(mod => !string.IsNullOrWhiteSpace(mod))
+                .ToArray();
+
+            if (!modNames.Any(mod => hidden.Contains(NormalizeModName(mod))))
+                return mods;
+
+            return string.Join(",", modNames.Where(mod => !hidden.Contains(NormalizeModName(mod))));
+        }
+
+        private static string NormalizeModName(string mod)
+        {
+            var normalized = mod.Trim().ToUpperInvariant();
+            return normalized switch
+            {
+                "RELAX" => "RX",
+                "AUTOPILOT" => "AP",
+                _ => normalized
+            };
         }
 
         private static string FormatTime(int ms)

@@ -10,6 +10,7 @@
 - 支持多种游戏状态：选歌、游玩、暂停、失败、结算、回放、编辑、空闲
 - 每个状态均可自定义聊天框模板，支持模板变量
 - 支持 osu! / taiko / catch / mania 四种模式，模式名可自定义
+- 可按名称单独隐藏不想显示的 MOD
 - 中文 / English 界面（跟随系统语言）
 
 ## 使用
@@ -34,6 +35,8 @@ dotnet run --project OsuOscVRC.csproj
 
 首次运行时生成 `config_osuosc.yaml`，所有设置均可在 UI 中修改。
 
+在「显示」选项卡的「隐藏 MOD」中填写要从 `{mods}` 隐藏的名称，多个名称使用逗号或空格分隔。例如填写 `RELAX, HD` 会隐藏 RELAX/RX 和 HD，但不会改变 `{mods_id}` 或其他游戏数据。
+
 ### 模板变量
 
 ```
@@ -50,7 +53,7 @@ dotnet run --project OsuOscVRC.csproj
 - `{mode_id}` — 模式数字 ID：0=osu!、1=Taiko、2=Catch、3=Mania。
 - `{path}` — .osu 谱面文件的完整路径。
 - `{accuracy}` / `{acc}` — 准确率 (0–100)。
-- `{mods}` — 模组名称字符串（如 `"DT,HD"`）。
+- `{mods}` — 经过「隐藏 MOD」过滤后的模组名称字符串（如 `"DT,HD"`）。
 - `{mods_id}` — 模组位运算数字 ID（如 `64` = DT）。
 - `{miss}` — 失误次数。
 - `{player}` — 观看回放时显示回放对象的名字，其他状态显示自己的名字。

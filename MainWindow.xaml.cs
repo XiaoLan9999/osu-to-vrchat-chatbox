@@ -68,6 +68,8 @@ namespace OsuOscVRC
             LblTplIdle.Content = Translator.Get("TplIdle");
             CbUseUnicode.Content = Translator.Get("DispUseUnicode");
             CbShowArtist.Content = Translator.Get("DispShowArtist");
+            LblDispHiddenMods.Content = Translator.Get("DispHiddenMods");
+            TxtDispHiddenModsHint.Text = Translator.Get("DispHiddenModsHint");
             LblDispStar.Content = Translator.Get("DispStarDecimals");
             LblDispPp.Content = Translator.Get("DispPpDecimals");
             LblDispAcc.Content = Translator.Get("DispAccDecimals");
@@ -101,6 +103,7 @@ namespace OsuOscVRC
             TbTplIdle.Text = _config.Templates.IdleText;
             CbUseUnicode.IsChecked = _config.UseUnicodeTitle;
             CbShowArtist.IsChecked = _config.ShowArtist;
+            TbDispHiddenMods.Text = _config.HiddenMods;
             TbDispStar.Text = _config.StarDecimals.ToString();
             TbDispPp.Text = _config.PpDecimals.ToString();
             TbDispAcc.Text = _config.AccuracyDecimals.ToString();
@@ -143,6 +146,7 @@ namespace OsuOscVRC
             _config.Templates.IdleText = TbTplIdle.Text;
             _config.UseUnicodeTitle = CbUseUnicode.IsChecked ?? false;
             _config.ShowArtist = CbShowArtist.IsChecked ?? false;
+            _config.HiddenMods = TbDispHiddenMods.Text;
             if (int.TryParse(TbDispStar.Text, out int sd)) _config.StarDecimals = sd;
             if (int.TryParse(TbDispPp.Text, out int pd)) _config.PpDecimals = pd;
             if (int.TryParse(TbDispAcc.Text, out int ad)) _config.AccuracyDecimals = ad;
