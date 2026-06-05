@@ -7,6 +7,51 @@ namespace OsuOscVRC.Formatter
 {
     public static class ChatboxFormatter
     {
+        private static readonly HashSet<string> KnownModAcronyms = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "NF", "EZ", "TD", "HD", "HR", "SD", "DT", "RX", "HT", "NC", "FL", "AT", "SO", "AP", "PF",
+            "4K", "5K", "6K", "7K", "8K", "FI", "RD", "CN", "TP", "9K", "CO", "1K", "3K", "2K", "V2",
+            "MR", "10K", "CL", "DA", "BL", "ST", "AC", "AL", "SG", "MG", "RP", "AS", "TR", "WG",
+            "SI", "GR", "DF", "WU", "BR", "AD", "MU", "NS", "DP", "BM"
+        };
+
+        private static readonly Dictionary<string, string> ModAliases = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["NOFAIL"] = "NF",
+            ["EASY"] = "EZ",
+            ["TOUCHDEVICE"] = "TD",
+            ["HIDDEN"] = "HD",
+            ["HARDROCK"] = "HR",
+            ["SUDDENDEATH"] = "SD",
+            ["DOUBLETIME"] = "DT",
+            ["RELAX"] = "RX",
+            ["HALFTIME"] = "HT",
+            ["NIGHTCORE"] = "NC",
+            ["FLASHLIGHT"] = "FL",
+            ["AUTOPLAY"] = "AT",
+            ["AUTO"] = "AT",
+            ["SPUNOUT"] = "SO",
+            ["AUTOPILOT"] = "AP",
+            ["PERFECT"] = "PF",
+            ["FADEIN"] = "FI",
+            ["RANDOM"] = "RD",
+            ["CINEMA"] = "CN",
+            ["TARGET"] = "TP",
+            ["COOP"] = "CO",
+            ["SCOREV2"] = "V2",
+            ["MIRROR"] = "MR",
+            ["KEY1"] = "1K",
+            ["KEY2"] = "2K",
+            ["KEY3"] = "3K",
+            ["KEY4"] = "4K",
+            ["KEY5"] = "5K",
+            ["KEY6"] = "6K",
+            ["KEY7"] = "7K",
+            ["KEY8"] = "8K",
+            ["KEY9"] = "9K",
+            ["KEY10"] = "10K"
+        };
+
         public static string Format(OsuState? state, GameState gameState, AppConfig config, bool forceTimeZero = false)
         {
             if (state == null) return "";
@@ -189,33 +234,70 @@ namespace OsuOscVRC.Formatter
                 return mods;
 
             var hidden = new HashSet<string>(
-                Regex.Split(hiddenMods, @"[\s,;+|/]+")
-                    .Where(mod => !string.IsNullOrWhiteSpace(mod))
-                    .Select(NormalizeModName),
+                SplitMods(hiddenMods),
                 StringComparer.OrdinalIgnoreCase);
 
             if (hidden.Count == 0)
                 return mods;
 
-            var modNames = Regex.Split(mods, @"[\s,;+|/]+")
-                .Where(mod => !string.IsNullOrWhiteSpace(mod))
+            var modNames = SplitMods(mods)
                 .ToArray();
 
-            if (!modNames.Any(mod => hidden.Contains(NormalizeModName(mod))))
+            if (!modNames.Any(hidden.Contains))
                 return mods;
 
-            return string.Join(",", modNames.Where(mod => !hidden.Contains(NormalizeModName(mod))));
+            return string.Join(",", modNames.Where(mod => !hidden.Contains(mod)));
+        }
+
+        private static IEnumerable<string> SplitMods(string mods)
+        {
+            return Regex.Split(mods, @"[\s,;+|/]+")
+                .Where(mod => !string.IsNullOrWhiteSpace(mod))
+                .SelectMany(SplitModToken);
+        }
+
+        private static IEnumerable<string> SplitModToken(string token)
+        {
+            var normalized = NormalizeModName(token);
+
+            if (KnownModAcronyms.Contains(normalized))
+            {
+                yield return normalized;
+                yield break;
+            }
+
+            var index = 0;
+            while (index < normalized.Length)
+            {
+                string? match = null;
+                foreach (var length in new[] { 3, 2 })
+                {
+                    if (index + length > normalized.Length)
+                        continue;
+
+                    var candidate = normalized.Substring(index, length);
+                    if (KnownModAcronyms.Contains(candidate))
+                    {
+                        match = candidate;
+                        break;
+                    }
+                }
+
+                if (match == null)
+                {
+                    yield return normalized;
+                    yield break;
+                }
+
+                yield return match;
+                index += match.Length;
+            }
         }
 
         private static string NormalizeModName(string mod)
         {
             var normalized = mod.Trim().ToUpperInvariant();
-            return normalized switch
-            {
-                "RELAX" => "RX",
-                "AUTOPILOT" => "AP",
-                _ => normalized
-            };
+            return ModAliases.TryGetValue(normalized, out var alias) ? alias : normalized;
         }
 
         private static string FormatTime(int ms)
