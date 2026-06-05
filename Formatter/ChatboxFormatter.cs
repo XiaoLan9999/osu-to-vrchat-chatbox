@@ -178,8 +178,8 @@ namespace OsuOscVRC.Formatter
             if (stars == 0) stars = state.Beatmap?.Stats?.Stars?.Live ?? 0;
             string starsStr = stars.ToString($"F{config.StarDecimals}");
             string accStr = accuracy.ToString($"F{config.AccuracyDecimals}");
-            string ppStr = Math.Round(pp, config.PpDecimals).ToString($"F{config.PpDecimals}");
-            string ppFcStr = Math.Round(state.Play?.Pp?.Fc ?? 0, config.PpDecimals).ToString($"F{config.PpDecimals}");
+            string ppStr = FormatDecimal(pp, config.PpDecimals);
+            string ppFcStr = FormatDecimal(state.Play?.Pp?.Fc ?? 0, config.PpDecimals);
             string path = state.DirectPath?.BeatmapFile ?? "";
             string clockRateStr = clockRate.ToString("F2");
 
@@ -298,6 +298,12 @@ namespace OsuOscVRC.Formatter
         {
             var normalized = mod.Trim().ToUpperInvariant();
             return ModAliases.TryGetValue(normalized, out var alias) ? alias : normalized;
+        }
+
+        private static string FormatDecimal(double value, int decimals)
+        {
+            var safeDecimals = Math.Max(0, decimals);
+            return Math.Round(value, safeDecimals, MidpointRounding.AwayFromZero).ToString($"F{safeDecimals}");
         }
 
         private static string FormatTime(int ms)
