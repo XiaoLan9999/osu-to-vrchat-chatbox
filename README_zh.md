@@ -35,7 +35,7 @@ dotnet run --project OsuOscVRC.csproj
 
 首次运行时生成 `config_osuosc.yaml`，所有设置均可在 UI 中修改。
 
-在「显示」选项卡的「隐藏 MOD」中填写要从 `{mods}` 隐藏的名称，多个名称使用逗号或空格分隔。例如填写 `RELAX, HD` 会隐藏 RELAX/RX 和 HD，但不会改变 `{mods_id}` 或其他游戏数据。
+在「显示」选项卡的「隐藏 MOD」中填写要从 `{mods}` 隐藏的名称，多个名称使用逗号或空格分隔。例如填写 `RELAX, HD` 会隐藏 RELAX/RX 和 HD，也能从 `HDRX` 这类连写 MOD 中隐藏 RX，但不会改变 `{mods_id}` 或其他游戏数据。
 
 ### 模板变量
 

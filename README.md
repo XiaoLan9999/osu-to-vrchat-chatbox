@@ -35,7 +35,7 @@ dotnet run --project OsuOscVRC.csproj
 
 A `config_osuosc.yaml` file is created on first launch. All settings can be edited from the UI.
 
-Enter mod names in **Hide Mods** on the Display tab to remove them from `{mods}`. Separate multiple names with commas or spaces. For example, `RELAX, HD` hides RELAX/RX and HD without changing `{mods_id}` or other gameplay data.
+Enter mod names in **Hide Mods** on the Display tab to remove them from `{mods}`. Separate multiple names with commas or spaces. For example, `RELAX, HD` hides RELAX/RX and HD, including RX inside joined strings such as `HDRX`, without changing `{mods_id}` or other gameplay data.
 
 ### Template Variables
 
